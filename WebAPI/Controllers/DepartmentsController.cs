@@ -22,6 +22,16 @@ namespace WebAPI.Controllers
         }
 
         /// <summary>
+        /// Получить список всех отделов
+        /// </summary>
+        /// <returns></returns>
+
+        [HttpGet]
+        public async Task<IEnumerable<Departments>> GetAllDepartments()
+        {
+            return await _dbContext.Departments.ToListAsync();
+        }
+        /// <summary>
         /// Редактируем отдел
         /// </summary>
         /// <param name="department"></param>
