@@ -31,21 +31,33 @@ namespace WebAPI.Controllers
         {
             return await _dbContext.Departments.ToListAsync();
         }
+
         /// <summary>
         /// Редактируем отдел
         /// </summary>
         /// <param name="department"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditDepartment(Departments department)
+        public async Task<ActionResult<Departments>> EditDepartment(int id, Departments department)
         {
-            if (ModelState.IsValid)
+            if (id != department.Id)
+                return BadRequest();
+
+            _dbContext.Entry(department).State = EntityState.Modified;
+
+            try
             {
-                _dbContext.Update(department);
                 await _dbContext.SaveChangesAsync();
-                return Ok(department);
             }
-            return BadRequest();
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_dbContext.Departments.Any(dep => dep.Id == id))
+                    return NotFound();
+                else
+                    throw;
+            }
+
+            return NoContent();
         }
 
         /// <summary>
