@@ -40,7 +40,7 @@ namespace WebAPI.Controllers
         public async Task<ActionResult<Users>> GetUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);
-
+            
             if (user == null)
                 return BadRequest();
 
@@ -53,16 +53,26 @@ namespace WebAPI.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditUser(Users user)
+        public async Task<ActionResult<Departments>> EditUser(int id, Users user)
         {
-            if (ModelState.IsValid)
+            if (id != user.Id)
+                return BadRequest();
+
+            _dbContext.Entry(user).State = EntityState.Modified;
+
+            try
             {
-                _dbContext.Users.Update(user);
                 await _dbContext.SaveChangesAsync();
-                return Ok(user);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_dbContext.Departments.Any(dep => dep.Id == id))
+                    return NotFound();
+                else
+                    throw;
             }
 
-            return BadRequest();
+            return NoContent();
         }
 
         
