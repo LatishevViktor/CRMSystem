@@ -40,7 +40,7 @@ namespace WebAPI.Controllers
         public async Task<ActionResult<Users>> GetUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);
-
+            
             if (user == null)
                 return BadRequest();
 
@@ -53,19 +53,39 @@ namespace WebAPI.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditUser(Users user)
+        public async Task<ActionResult<Departments>> EditUser(int id, Users user)
         {
-            if (ModelState.IsValid)
+            if (id != user.Id)
             {
-                _dbContext.Users.Update(user);
-                await _dbContext.SaveChangesAsync();
-                return Ok(user);
+                return BadRequest();
             }
 
-            return BadRequest();
+            _dbContext.Entry(user).State = EntityState.Modified;
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_dbContext.Users.Any(dep => dep.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
-        
+        /// <summary>
+        /// Добавляем пользователя
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<Users>> AddUser(Users user)
         {
@@ -75,7 +95,11 @@ namespace WebAPI.Controllers
             return Ok(user);
         }
 
-        
+        /// <summary>
+        /// Удаляем пользователя
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult<Users>> DeleteUser(int id)
         {

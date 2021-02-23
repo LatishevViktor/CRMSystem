@@ -41,7 +41,9 @@ namespace WebAPI.Controllers
         public async Task<ActionResult<Departments>> EditDepartment(int id, Departments department)
         {
             if (id != department.Id)
+            {
                 return BadRequest();
+            }
 
             _dbContext.Entry(department).State = EntityState.Modified;
 
@@ -51,10 +53,14 @@ namespace WebAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_dbContext.Departments.Any(dep => dep.Id == id))
+                if (!_dbContext.Departments.Any(dep=> dep.Id == id))
+                {
                     return NotFound();
+                }
                 else
+                {
                     throw;
+                }
             }
 
             return NoContent();
